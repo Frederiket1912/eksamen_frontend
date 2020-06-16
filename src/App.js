@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 import { Switch, Route, NavLink } from "react-router-dom";
 import jwt_decode from "jwt-decode";
+import CoursePage from "./course-page";
 
 function App({ apiFetchFacade, authFacade }) {
   let token = localStorage.getItem("jwtToken");
@@ -17,9 +18,9 @@ function App({ apiFetchFacade, authFacade }) {
     updateRoles();
   };
 
-  const login = (user, pass) => {
+  const login = (user, pass, role) => {
     authFacade
-      .login(user, pass)
+      .login(user, pass, role)
       .then((res) => setLoggedIn(true))
       .then((res) => updateRoles())
       .catch((res) =>
@@ -55,16 +56,19 @@ function App({ apiFetchFacade, authFacade }) {
           <Route exact path="/">
             <Home token={token} />
           </Route>
-          {role && role.includes("user") && (
+          {/* {role && role.includes("student") && (
             <Route path="/fetch">
               <ApiFetch apiFetchFacade={apiFetchFacade} />
             </Route>
-          )}
-          {role && role.includes("admin") && (
+          )} */}
+          {role && role.includes("instructor") && (
             <Route path="/custompage">
               <Custompage />
             </Route>
           )}
+          <Route path="/coursepage">
+            <CoursePage apiFetchFacade={apiFetchFacade} />
+          </Route>
           <Route>
             <NoMatch />
           </Route>
@@ -85,12 +89,16 @@ function App({ apiFetchFacade, authFacade }) {
 }
 
 function LogIn({ login }) {
-  const init = { username: "", password: "" };
+  const init = { username: "", password: "", role: "student" };
   const [loginCredentials, setLoginCredentials] = useState(init);
 
   const performLogin = (evt) => {
     evt.preventDefault();
-    login(loginCredentials.username, loginCredentials.password);
+    login(
+      loginCredentials.username,
+      loginCredentials.password,
+      loginCredentials.role
+    );
   };
   const onChange = (evt) => {
     setLoginCredentials({
@@ -105,6 +113,12 @@ function LogIn({ login }) {
       <form onChange={onChange}>
         <input placeholder="User Name" id="username" />
         <input placeholder="Password" id="password" />
+        <br></br>
+        <select id="role">
+          <option value="student">Student</option>
+          <option value="instructor">Instructor</option>
+        </select>
+        <br></br>
         <button onClick={performLogin}>Login</button>
       </form>
     </div>
@@ -123,21 +137,25 @@ function Header({ role, loggedIn, logout }) {
 
         {loggedIn ? (
           <>
-            {role !== null && role.includes("admin") && (
+            {role !== null && role.includes("instructor") && (
               <li>
                 <NavLink activeClassName="active" to="/custompage">
                   Custom page
                 </NavLink>
               </li>
             )}
-            {role !== null && role.includes("user") && (
+            {role !== null && role.includes("student") && (
               <li>
                 <NavLink activeClassName="active" to="/fetch">
                   Api Fetch
                 </NavLink>
               </li>
             )}
-
+            <li>
+              <NavLink activeClassName="active" to="/coursepage">
+                Course Page
+              </NavLink>
+            </li>
             <li>
               <NavLink activeClassName="active" onClick={logout} to="/login">
                 Logout

@@ -1,4 +1,4 @@
-const URL = "https://frederiket.dk/ca3";
+import { LoginURL } from "./settings";
 
 function handleHttpErrors(res) {
   if (!res.ok) {
@@ -23,12 +23,13 @@ function authFacade() {
     localStorage.removeItem("jwtToken");
   };
 
-  const login = (user, password) => {
+  const login = (user, password, role) => {
     const options = makeOptions("POST", true, {
       username: user,
       password: password,
+      role: role,
     });
-    return fetch(URL + "/api/login", options)
+    return fetch(LoginURL, options)
       .then(handleHttpErrors)
       .then((res) => {
         setToken(res.token);
